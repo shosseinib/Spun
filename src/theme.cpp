@@ -88,16 +88,34 @@ void Theme::reload() {
                         tokens.contains("accent_fg_color") &&
                         tokens.contains("card_bg_color");
   if (complete || m_colors.isEmpty()) {
-    QColor bg = tokens.value("window_bg_color", QColor("#191919"));
-    QColor fg = tokens.value("window_fg_color", QColor("#ededed"));
-    QColor card = tokens.value("card_bg_color", QColor("#262626"));
+    QColor bg, fg, card, accent, onAccent;
+    if (complete) {
+      bg = tokens.value("window_bg_color", QColor("#191919"));
+      fg = tokens.value("window_fg_color", QColor("#ededed"));
+      card = tokens.value("card_bg_color", QColor("#262626"));
+      accent = tokens.value("accent_bg_color", QColor("#b8c4cf"));
+      onAccent = tokens.value("accent_fg_color", QColor("#253440"));
+    } else {
+      // Noctalia is not configured: follow the system theme (light/dark) so
+      // Spun matches Firefox, Kate and the rest of the desktop instead of
+      // forcing a hardcoded dark appearance.
+      const QPalette palette = qApp->palette();
+      const bool dark = palette.window().color().lightnessF() < 0.5;
+      if (dark) {
+        bg = QColor("#191919"); fg = QColor("#ededed"); card = QColor("#262626");
+        accent = QColor("#b8c4cf"); onAccent = QColor("#253440");
+      } else {
+        bg = palette.window().color(); fg = palette.windowText().color(); card = palette.base().color();
+        accent = palette.highlight().color(); onAccent = palette.highlightedText().color();
+      }
+    }
     m_colors = {
         {"surface", bg},
         {"text", fg},
         {"card", card},
-        {"accent", tokens.value("accent_bg_color", QColor("#b8c4cf"))},
-        {"onAccent", tokens.value("accent_fg_color", QColor("#253440"))},
-        {"muted", supportingText(fg, bg, card, tokens.value("accent_bg_color", QColor("#b8c4cf")))},
+        {"accent", accent},
+        {"onAccent", onAccent},
+        {"muted", supportingText(fg, bg, card, accent)},
         {"outline", mix(card, fg, .18)},
         {"hover", mix(card, fg, .07)},
         {"pressed", mix(card, fg, .13)},
