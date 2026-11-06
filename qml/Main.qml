@@ -578,9 +578,9 @@ ApplicationWindow {
 
     Shortcut { sequence: "Alt+G"; enabled: actionNotice.shown && actionNotice.canUndo && !root.menuOpen; onActivated: { root.revealChrome(); noticeUndo.forceActiveFocus(Qt.ShortcutFocusReason) } }
     Shortcut { sequence: "Ctrl+K"; enabled: !root.menuOpen || quickJump.visible; onActivated: { root.revealChrome(); quickJump.visible ? quickJump.close() : root.openQuickJump() } }
-    Shortcut { sequence: "Space"; enabled: !(root.activeFocusItem instanceof AbstractButton && root.activeFocusItem.visualFocus) && !(root.useCider && root.queueOpen && trackList.activeFocus) && !(root.libraryOpen && musicBrowser.item && musicBrowser.item.trackListFocused) && !root.editingText && !root.menuOpen; onActivated: { root.revealChrome(); root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : files.open() } }
+    Shortcut { sequence: "Space"; enabled: !(root.activeFocusItem instanceof AbstractButton && root.activeFocusItem.visualFocus) && !(root.useCider && root.queueOpen && trackList.activeFocus) && !(root.libraryOpen && musicBrowser.item && musicBrowser.item.trackListFocused) && !root.editingText && !root.menuOpen; onActivated: { root.revealChrome(); root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : openMusicDialog() } }
     Shortcut { sequence: "Ctrl+V"; enabled: !root.editingText && !root.menuOpen; onActivated: { root.revealChrome(); root.openMusicLink("", true) } }
-    Shortcut { sequence: "Ctrl+O"; enabled: !root.menuOpen; onActivated: { root.revealChrome(); files.open() } }
+    Shortcut { sequence: "Ctrl+O"; enabled: !root.menuOpen; onActivated: { root.revealChrome(); openMusicDialog() } }
     Shortcut { sequence: "Ctrl+Shift+O"; enabled: !root.menuOpen; onActivated: { root.revealChrome(); folder.open() } }
     Shortcut { sequence: "Ctrl+Q"; onActivated: { root.revealChrome(); Qt.quit() } }
     Shortcut { sequence: "Ctrl+F"; enabled: !root.menuOpen; onActivated: { root.revealChrome(); root.libraryOpen ? (root.useServer ? serverBrowser.item.focusSearch() : root.useYoutube ? youtubeBrowser.item.focusSearch() : musicBrowser.focusSearch()) : root.openQueueSearch() } }
@@ -609,6 +609,15 @@ ApplicationWindow {
         onAccepted: { root.useLocal(); player.addUrls(selectedFiles) }
     }
     FolderDialog { id: folder; title: "Add a music folder"; onAccepted: { root.useLocal(); player.addUrls([selectedFolder], player.count === 0) } }
+
+    function openMusicDialog() {
+        if (kioPicker.available) kioPicker.open()
+        else files.open()
+    }
+    Connections {
+        target: kioPicker
+        onFilesSelected: { if (urls.length) { root.useLocal(); player.addUrls(urls) } }
+    }
     FileDialog { id: cover; title: "Choose the disc artwork"; nameFilters: ["Artwork (*.jpg *.jpeg *.png *.webp)"]; onAccepted: player.setCover(selectedFile) }
 
     function advanceMediaFrame(seconds, now) {
@@ -713,7 +722,7 @@ ApplicationWindow {
             objectName: "addMusicButton"
             x: 4; y: 4; glyphName: root.useCider || root.useYoutube || root.useServer ? "search" : "plus"; tip: root.useCider || root.useYoutube || root.useServer ? "Browse music · Ctrl+B" : "Add music · Ctrl+O"
             selected: root.libraryOpen; fill: root.libraryOpen ? root.inset : "transparent"
-            ink: root.libraryOpen ? root.accent : root.ink; hoverFill: root.hoverFill; onClicked: root.useCider || root.useYoutube || root.useServer ? root.openLibrary() : files.open()
+            ink: root.libraryOpen ? root.accent : root.ink; hoverFill: root.hoverFill; onClicked: root.useCider || root.useYoutube || root.useServer ? root.openLibrary() : openMusicDialog()
         }
         IconButton {
             objectName: "queueButton"
@@ -1423,7 +1432,7 @@ ApplicationWindow {
         Row {
             x: 8; y: 4; spacing: 0
             IconButton { id: miniPrevious; objectName: "miniPrevious"; glyphName: "previous"; tip: "Previous track"; ink: root.ink; hoverFill: root.hoverFill; enabled: root.useCider ? root.ciderService.canPrevious : root.deckPlayer.count > 0; onClicked: root.deckPlayer.previous() }
-            IconButton { id: miniPlay; objectName: "miniPlay"; glyphSize: 26; width: 48; glyphName: root.deckPlayer.playing ? "pause" : "play"; tip: root.deckPlayer.playing ? "Pause" : "Play"; fill: root.accent; ink: theme.colors.onAccent; hoverFill: Qt.lighter(root.accent,1.08); onClicked: root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : files.open() }
+            IconButton { id: miniPlay; objectName: "miniPlay"; glyphSize: 26; width: 48; glyphName: root.deckPlayer.playing ? "pause" : "play"; tip: root.deckPlayer.playing ? "Pause" : "Play"; fill: root.accent; ink: theme.colors.onAccent; hoverFill: Qt.lighter(root.accent,1.08); onClicked: root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : openMusicDialog() }
             IconButton { id: miniNext; objectName: "miniNext"; Accessible.description: miniPeek.visible ? miniPeek.summary : ""; showTip: false; glyphName: "next"; tip: "Next track"; ink: root.ink; hoverFill: root.hoverFill; enabled: root.useCider ? root.ciderService.canNext : root.deckPlayer.count > 0; onClicked: root.deckPlayer.next()
                 NextTrackTip { id: miniPeek; app: root; visible: root.miniMode && miniNext.enabled && (miniNext.hovered || miniNext.visualFocus) && !miniNext.down && !quickJump.visible }
             }
@@ -1501,7 +1510,7 @@ ApplicationWindow {
                 glyphName: root.deckPlayer.playing ? "pause" : "play"
                 tip: root.deckPlayer.playing ? "Pause · Space" : "Play · Space"
                 fill: root.accent; ink: theme.colors.onAccent; hoverFill: Qt.lighter(root.accent, 1.08)
-                onClicked: root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : files.open()
+                onClicked: root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : openMusicDialog()
             }
             IconButton { objectName: "nextButton"; y: 4; glyphName: "next"; tip: "Next track · Ctrl+→"; ink: root.ink; hoverFill: root.hoverFill; enabled: root.useCider ? root.ciderService.canNext : root.deckPlayer.count > 0; onClicked: root.deckPlayer.next() }
             IconButton {
@@ -1832,7 +1841,7 @@ ApplicationWindow {
                 }
                 onClicked: root.ciderService.raise()
             }
-            IconButton { visible: !root.useCider && !root.useYoutube && !root.useServer; x: 0; anchors.verticalCenter: parent.verticalCenter; glyphName: "plus"; tip: "Add tracks"; ink: root.ink; hoverFill: root.hoverFill; onClicked: files.open() }
+            IconButton { visible: !root.useCider && !root.useYoutube && !root.useServer; x: 0; anchors.verticalCenter: parent.verticalCenter; glyphName: "plus"; tip: "Add tracks"; ink: root.ink; hoverFill: root.hoverFill; onClicked: openMusicDialog() }
             IconButton { visible: !root.useCider && !root.useYoutube && !root.useServer; x: SpunStyle.target + SpunStyle.smallGap; anchors.verticalCenter: parent.verticalCenter; glyphName: "folder"; tip: "Add music folder"; ink: root.ink; hoverFill: root.hoverFill; onClicked: folder.open() }
             Button {
                 id: clearQueueButton
@@ -2194,7 +2203,7 @@ ApplicationWindow {
         exit: Transition { NumberAnimation { property: "opacity"; from: 1; to: 0; duration: SpunStyle.exit; easing.type: Easing.BezierSpline; easing.bezierCurve: SpunStyle.effectsCurve } }
         onOpened: { root.focusFirstMenuItem(menu); if (root.useCider) root.ciderService.refreshModes() }
 
-        SettingsAction { text: "Add tracks"; glyphName: "plus"; hint: "Ctrl+O"; onTriggered: files.open() }
+        SettingsAction { text: "Add tracks"; glyphName: "plus"; hint: "Ctrl+O"; onTriggered: openMusicDialog() }
         SettingsAction { text: "Add music folder"; glyphName: "folder"; hint: "Ctrl+Shift+O"; onTriggered: folder.open() }
         SettingsAction { text: "Change artwork"; glyphName: "artwork"; enabled: !root.useCider && !root.useYoutube && !root.useServer && player.count > 0; onTriggered: cover.open() }
         SettingsGap {}

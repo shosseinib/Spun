@@ -41,8 +41,9 @@
 #include "mpris.h"
 #include "theme.h"
 #include "typography.h"
+#include "kiopicker.h"
 #include "cider.h"
-#include <QGuiApplication>
+#include <QApplication>
 #include <QFontDatabase>
 #include <QFontInfo>
 #include <QFont>
@@ -1584,7 +1585,7 @@ int main(int argc, char **argv) {
         qputenv("QT_FFMPEG_DECODING_HW_DEVICE_TYPES", ",");
     if (!qEnvironmentVariableIsSet("QT_FFMPEG_ENCODING_HW_DEVICE_TYPES"))
         qputenv("QT_FFMPEG_ENCODING_HW_DEVICE_TYPES", ",");
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     // Some Wayland/OpenGL integrations default to Qt's basic 16 ms animation
     // driver. Use the vsync-driven loop for the native hardware renderer.
     // Keep software rendering and explicit compatibility overrides intact.
@@ -1695,6 +1696,7 @@ int main(int argc, char **argv) {
     TapeSound tapeSound(!test);
     VinylNoise vinylNoise(!test);
     Native native;
+    KioPicker kioPicker;
     const qint64 backendReady = startup.elapsed();
 
     qmlRegisterType<Symbol>("Spun", 1, 0, "Symbol");
@@ -1744,6 +1746,7 @@ int main(int argc, char **argv) {
     engine.rootContext()->setContextProperty("musicActions", &musicActions);
     engine.rootContext()->setContextProperty("listening", &listening);
     engine.rootContext()->setContextProperty("testMode", test);
+    engine.rootContext()->setContextProperty("kioPicker", &kioPicker);
     const auto benchmarkMedium = parser.value("benchmark-medium");
     if (parser.isSet("benchmark")) {
         if (!QStringList{"cd","vinyl","cassette","tp7","tx6"}.contains(benchmarkMedium)) return 2;
