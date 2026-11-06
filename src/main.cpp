@@ -41,7 +41,7 @@
 #include "mpris.h"
 #include "theme.h"
 #include "typography.h"
-#include "kiopicker.h"
+#include "filepicker.h"
 #include "cider.h"
 #include <QApplication>
 #include <QFontDatabase>
@@ -1696,7 +1696,7 @@ int main(int argc, char **argv) {
     TapeSound tapeSound(!test);
     VinylNoise vinylNoise(!test);
     Native native;
-    KioPicker kioPicker;
+    FilePicker filePicker;
     const qint64 backendReady = startup.elapsed();
 
     qmlRegisterType<Symbol>("Spun", 1, 0, "Symbol");
@@ -1746,7 +1746,7 @@ int main(int argc, char **argv) {
     engine.rootContext()->setContextProperty("musicActions", &musicActions);
     engine.rootContext()->setContextProperty("listening", &listening);
     engine.rootContext()->setContextProperty("testMode", test);
-    engine.rootContext()->setContextProperty("kioPicker", &kioPicker);
+    engine.rootContext()->setContextProperty("filePicker", &filePicker);
     const auto benchmarkMedium = parser.value("benchmark-medium");
     if (parser.isSet("benchmark")) {
         if (!QStringList{"cd","vinyl","cassette","tp7","tx6"}.contains(benchmarkMedium)) return 2;

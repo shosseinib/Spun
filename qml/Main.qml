@@ -611,11 +611,11 @@ ApplicationWindow {
     FolderDialog { id: folder; title: "Add a music folder"; onAccepted: { root.useLocal(); player.addUrls([selectedFolder], player.count === 0) } }
 
     function openMusicDialog() {
-        if (kioPicker.available) kioPicker.open()
+        if (filePicker.available) filePicker.open()
         else files.open()
     }
     Connections {
-        target: kioPicker
+        target: filePicker
         onFilesSelected: { if (urls.length) { root.useLocal(); player.addUrls(urls) } }
     }
     FileDialog { id: cover; title: "Choose the disc artwork"; nameFilters: ["Artwork (*.jpg *.jpeg *.png *.webp)"]; onAccepted: player.setCover(selectedFile) }
