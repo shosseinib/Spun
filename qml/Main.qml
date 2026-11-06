@@ -576,6 +576,16 @@ ApplicationWindow {
         MouseArea { anchors.fill: parent; onPressed: root.startSystemMove() }
     }
 
+    // Subtle hairline border around the frameless window for contrast
+    // against light desktops where the transparent window can blend in.
+    Rectangle {
+        objectName: "windowBorder"
+        anchors.fill: root
+        border.width: 1
+        border.color: root.hairline
+        color: "transparent"
+    }
+
     Shortcut { sequence: "Alt+G"; enabled: actionNotice.shown && actionNotice.canUndo && !root.menuOpen; onActivated: { root.revealChrome(); noticeUndo.forceActiveFocus(Qt.ShortcutFocusReason) } }
     Shortcut { sequence: "Ctrl+K"; enabled: !root.menuOpen || quickJump.visible; onActivated: { root.revealChrome(); quickJump.visible ? quickJump.close() : root.openQuickJump() } }
     Shortcut { sequence: "Space"; enabled: !(root.activeFocusItem instanceof AbstractButton && root.activeFocusItem.visualFocus) && !(root.useCider && root.queueOpen && trackList.activeFocus) && !(root.libraryOpen && musicBrowser.item && musicBrowser.item.trackListFocused) && !root.editingText && !root.menuOpen; onActivated: { root.revealChrome(); root.deckPlayer.count ? root.deckPlayer.toggle() : (root.useYoutube || root.useServer) ? root.openLibrary() : root.useCider ? root.ciderService.toggle() : openMusicDialog() } }
